@@ -1,47 +1,38 @@
 <template>
   <div>
     <h2>Liste des Cartes</h2>
+    <button @click="toggleImages">
+      {{ showImages ? "Cacher" : "Montrer" }} les images
+    </button>
     <div class="navigation-buttons">
       <button @click="prevPage" :disabled="page <= 1">Précédent</button>
       <button @click="nextPage">Suivant</button>
     </div>
     <ul class="card-list">
-      <li v-for="card in cards" :key="card.id" class="card-item">
-        <router-link
-          :to="{
-            name: 'CardDetail',
-            params: {
-              id: card.id,
-              title: card.title,
-              description: card.description,
-            },
-          }"
-          class="card-link"
-        >
-          <img
-            :src="card.imageUrl || 'url_de_votre_image_par_defaut'"
-            alt="Image de la carte"
-            class="card-image"
-          />
-
-          <span><strong>Nom:</strong> {{ card.name }}</span>
-          <span><strong>Type:</strong> {{ card.type }}</span>
-          <span><strong>Rareté:</strong> {{ card.rarity }}</span>
-        </router-link>
-      </li>
+      <CardItem
+        v-for="card in cards"
+        :key="card.id"
+        :card="card"
+        :show-images="showImages"
+        @add-to-cart="addToCart"
+      />
     </ul>
   </div>
 </template>
 
 <script>
-import { onMounted, ref } from "vue";
+import CardItem from "./CardItem.vue"; // Assurez-vous que le chemin est correct
+import { onMounted, ref, reactive } from "vue";
 import axios from "axios";
 
 export default {
+  components: { CardItem },
   setup() {
     const cards = ref([]);
     const page = ref(1);
-    const pageSize = 10; // Ajustez en fonction du nombre de cartes que vous souhaitez afficher par page
+    const pageSize = 10;
+    const showImages = ref(true);
+    const cart = reactive([]);
 
     const getPokemonData = async () => {
       try {
@@ -66,9 +57,18 @@ export default {
       }
     };
 
+    const toggleImages = () => {
+      showImages.value = !showImages.value;
+    };
+
+    const addToCart = (card) => {
+      cart.push(card);
+      // Affichez le panier dans la console pour le débogage, ou implémentez une logique pour afficher le panier.
+    };
+
     onMounted(getPokemonData);
 
-    return { cards, nextPage, prevPage };
+    return { cards, nextPage, prevPage, toggleImages, showImages, addToCart };
   },
 };
 </script>
